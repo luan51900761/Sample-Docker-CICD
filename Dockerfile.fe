@@ -1,0 +1,23 @@
+# Stage 1: Build Angular
+FROM node:14 AS builder
+
+# Cài Angular CLI 11
+RUN npm install -g @angular/cli@11
+
+WORKDIR /app
+COPY FE/fe-app/ ./
+
+RUN npm install
+RUN ng build --prod
+
+# Stage 2: Serve bằng nginx
+FROM nginx:alpine
+
+# Xóa file mặc định
+RUN rm -rf /usr/share/nginx/html/*
+
+# Copy từ build stage
+COPY --from=builder /app/dist/fe-app /usr/share/nginx/html
+
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
